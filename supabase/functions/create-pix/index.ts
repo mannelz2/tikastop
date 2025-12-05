@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const body: CreatePixRequest = await req.json();
 
-    const amountInCents = body.amount || 2167;
+    const amountInCents = body.amount || 2245;
     const amountInReais = amountInCents / 100;
     const transactionType = body.transactionType || "initial";
     const randomProductName = PRODUCT_NAMES[Math.floor(Math.random() * PRODUCT_NAMES.length)];
