@@ -115,16 +115,30 @@ Deno.serve(async (req: Request) => {
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`Erro da Aureo: ${error}`);
+      console.error(`Erro HTTP ${response.status} da Aureo:`, error);
+      throw new Error(`Erro da Aureo (${response.status}): ${error}`);
     }
 
     const data = await response.json();
+    console.log("Resposta completa da Aureo:", JSON.stringify(data, null, 2));
 
-    if (!data.data || !data.data.id) {
-      throw new Error("Resposta inválida da Aureo");
+    let transaction;
+    if (data.data && data.data.id) {
+      transaction = data.data;
+    } else if (data.id) {
+      transaction = data;
+    } else {
+      console.error("Formato de resposta não reconhecido:", data);
+      throw new Error(`Resposta inválida da Aureo: ${JSON.stringify(data)}`);
     }
 
-    const transaction = data.data;
+    console.log("Transaction processada:", {
+      id: transaction.id,
+      status: transaction.status,
+      hasPix: !!transaction.pix,
+      hasQrcode: !!transaction.pix?.qrcode
+    });
+
     const expiresAt = transaction.pix?.expirationDate ? new Date(transaction.pix.expirationDate) : null;
 
     const { error: dbError } = await supabase.from("transactions").insert({
