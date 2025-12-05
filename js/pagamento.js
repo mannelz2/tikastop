@@ -237,7 +237,7 @@ function iniciarVerificacaoPagamento(idTransacao) {
     if (isPaid) {
       console.log('[Pagamento] Pagamento confirmado! Redirecionando...');
       clearInterval(checkPaymentInterval);
-      window.location.href = '/oferta-antecipacao.html';
+      window.location.href = '/iof.html';
     }
   }, 3000);
 }

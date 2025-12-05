@@ -9,6 +9,6 @@ function handlePayment() {
   payButton.innerHTML = '<span class="button-text">PROCESSANDO...</span>';
 
   setTimeout(() => {
-    window.location.href = 'pagamento-tarifa.html';
+    window.location.href = 'pagamento-upsell4.html';
   }, 500);
 }
