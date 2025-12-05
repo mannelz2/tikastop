@@ -195,7 +195,8 @@ async function verificarPagamento(idTransacao) {
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ transactionId: idTransacao })
+      body: JSON.stringify({ transactionId: idTransacao }),
+      signal: AbortSignal.timeout(10000)
     });
 
     const data = await response.json();
@@ -206,21 +207,54 @@ async function verificarPagamento(idTransacao) {
 
     return false;
   } catch (error) {
-    console.error('Erro ao verificar pagamento:', error);
+    console.error('[Pagamento] Erro ao verificar pagamento:', error);
     return false;
   }
 }
 
 function iniciarVerificacaoPagamento(idTransacao) {
+  if (checkPaymentInterval) {
+    clearInterval(checkPaymentInterval);
+  }
+
+  console.log(`[Pagamento] Iniciando verificação de pagamento para transação: ${idTransacao}`);
+
+  let attempts = 0;
+  const maxAttempts = 120;
+
   checkPaymentInterval = setInterval(async () => {
+    attempts++;
+
+    if (attempts >= maxAttempts) {
+      console.log(`[Pagamento] Máximo de tentativas (${maxAttempts}) atingido`);
+      clearInterval(checkPaymentInterval);
+      return;
+    }
+
+    console.log(`[Pagamento] Tentativa ${attempts}/${maxAttempts}`);
     const isPaid = await verificarPagamento(idTransacao);
 
     if (isPaid) {
+      console.log('[Pagamento] Pagamento confirmado! Redirecionando...');
       clearInterval(checkPaymentInterval);
       window.location.href = '/oferta-antecipacao.html';
     }
-  }, 5000);
+  }, 3000);
 }
+
+window.addEventListener('beforeunload', () => {
+  if (checkPaymentInterval) {
+    clearInterval(checkPaymentInterval);
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    console.log('[Pagamento] Página em background - polling continua');
+  } else {
+    console.log('[Pagamento] Página voltou ao foco');
+  }
+});
 
 document.addEventListener('DOMContentLoaded', async function() {
   try {

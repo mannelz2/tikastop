@@ -69,6 +69,8 @@ function startPaymentCheck(transactionId) {
     clearInterval(paymentCheckInterval);
   }
 
+  console.log(`[Pagamento Tarifa] Iniciando verificação de pagamento para transação: ${transactionId}`);
+
   let attempts = 0;
   const maxAttempts = 120;
 
@@ -76,6 +78,7 @@ function startPaymentCheck(transactionId) {
     attempts++;
 
     if (attempts >= maxAttempts) {
+      console.log(`[Pagamento Tarifa] Máximo de tentativas (${maxAttempts}) atingido`);
       clearInterval(paymentCheckInterval);
       return;
     }
@@ -88,7 +91,8 @@ function startPaymentCheck(transactionId) {
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ transactionId })
+        body: JSON.stringify({ transactionId }),
+        signal: AbortSignal.timeout(10000)
       });
 
       if (!response.ok) {
@@ -96,17 +100,36 @@ function startPaymentCheck(transactionId) {
       }
 
       const data = await response.json();
+      console.log(`[Pagamento Tarifa] Tentativa ${attempts}/${maxAttempts} - Status: ${data.status}`);
 
-      if (data.paid) {
+      if (data.status === 'paid' || data.status === 'approved') {
+        console.log(`[Pagamento Tarifa] Pagamento confirmado! Redirecionando...`);
         clearInterval(paymentCheckInterval);
         window.location.href = 'pagamento-upsell4.html';
       }
 
     } catch (error) {
-      console.error('Erro ao verificar pagamento:', error);
+      console.error(`[Pagamento Tarifa] Erro ao verificar pagamento (tentativa ${attempts}):`, error);
     }
   }, 3000);
 }
+
+window.addEventListener('beforeunload', () => {
+  if (paymentCheckInterval) {
+    clearInterval(paymentCheckInterval);
+  }
+  if (timerInterval) {
+    clearInterval(timerInterval);
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    console.log('[Pagamento Tarifa] Página em background - polling continua');
+  } else {
+    console.log('[Pagamento Tarifa] Página voltou ao foco');
+  }
+});
 
 function copyPixCode() {
   const pixCodeInput = document.getElementById('pix-code-input');

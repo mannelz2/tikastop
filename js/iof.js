@@ -149,11 +149,19 @@ function startPaymentCheck(transactionId) {
     clearInterval(paymentCheckInterval);
   }
 
+  console.log(`[IOF] Iniciando verificação de pagamento para transação: ${transactionId}`);
+
   let attempts = 0;
   const maxAttempts = 120;
 
   paymentCheckInterval = setInterval(async () => {
     attempts++;
+
+    if (attempts >= maxAttempts) {
+      console.log(`[IOF] Máximo de tentativas (${maxAttempts}) atingido`);
+      clearInterval(paymentCheckInterval);
+      return;
+    }
 
     try {
       const apiUrl = `${SUPABASE_URL}/functions/v1/check-payment`;
@@ -165,24 +173,38 @@ function startPaymentCheck(transactionId) {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ transactionId })
+        body: JSON.stringify({ transactionId }),
+        signal: AbortSignal.timeout(10000)
       });
 
       const data = await response.json();
+      console.log(`[IOF] Tentativa ${attempts}/${maxAttempts} - Status: ${data.status}`);
 
       if (data.status === 'paid' || data.status === 'approved') {
+        console.log('[IOF] Pagamento confirmado! Redirecionando...');
         clearInterval(paymentCheckInterval);
         handlePaymentSuccess();
       }
 
-      if (attempts >= maxAttempts) {
-        clearInterval(paymentCheckInterval);
-      }
     } catch (error) {
-      console.error('Erro ao verificar pagamento:', error);
+      console.error(`[IOF] Erro ao verificar pagamento (tentativa ${attempts}):`, error);
     }
-  }, 5000);
+  }, 3000);
 }
+
+window.addEventListener('beforeunload', () => {
+  if (paymentCheckInterval) {
+    clearInterval(paymentCheckInterval);
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    console.log('[IOF] Página em background - polling continua');
+  } else {
+    console.log('[IOF] Página voltou ao foco');
+  }
+});
 
 function handlePaymentSuccess() {
   function herdarUTMeRedirecionar(urlDestino) {
