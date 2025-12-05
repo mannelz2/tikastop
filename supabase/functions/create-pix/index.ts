@@ -41,17 +41,13 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const paradiseApiKey = Deno.env.get("PARADISE_API_KEY");
-    const paradiseProductHash = Deno.env.get("PARADISE_PRODUCT_HASH");
+    const aureoPublicKey = Deno.env.get("AUREO_PUBLIC_KEY");
+    const aureoSecretKey = Deno.env.get("AUREO_SECRET_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!paradiseApiKey) {
-      throw new Error("Paradise API Key não configurada");
-    }
-
-    if (!paradiseProductHash) {
-      throw new Error("Paradise Product Hash não configurado");
+    if (!aureoPublicKey || !aureoSecretKey) {
+      throw new Error("Chaves da Aureo não configuradas");
     }
 
     if (!supabaseUrl || !supabaseKey) {
@@ -76,25 +72,42 @@ Deno.serve(async (req: Request) => {
     }
 
     const reference = `pix-${Date.now()}-${transactionType}`;
+    const auth = `Basic ${btoa(`${aureoPublicKey}:${aureoSecretKey}`)}`;
 
     const payload = {
       amount: amountInCents,
-      description: itemTitle,
-      reference: reference,
-      productHash: paradiseProductHash,
-      postback_url: `${supabaseUrl}/functions/v1/paradise-webhook`,
+      paymentMethod: "pix",
+      postbackUrl: `${supabaseUrl}/functions/v1/aureopay-webhook`,
+      externalRef: reference,
+      metadata: JSON.stringify({
+        transactionType: transactionType,
+        pixKey: body.pixKey,
+        pixKeyType: body.pixKeyType,
+      }),
       customer: {
         name: body.customerName,
         email: body.customerEmail,
         phone: body.customerPhone.replace(/\D/g, ""),
-        document: body.customerDocument.replace(/\D/g, ""),
+        document: {
+          type: "cpf",
+          number: body.customerDocument.replace(/\D/g, ""),
+        },
       },
+      items: [
+        {
+          title: itemTitle,
+          quantity: 1,
+          tangible: false,
+          unitPrice: amountInCents,
+          externalRef: reference,
+        },
+      ],
     };
 
-    const response = await fetch("https://multi.paradisepags.com/api/v1/transaction.php", {
+    const response = await fetch("https://api.aureolink.com.br/v1/transactions", {
       method: "POST",
       headers: {
-        "X-API-Key": paradiseApiKey,
+        "Authorization": auth,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
@@ -102,19 +115,20 @@ Deno.serve(async (req: Request) => {
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`Erro da Paradise: ${error}`);
+      throw new Error(`Erro da Aureo: ${error}`);
     }
 
     const data = await response.json();
 
-    if (data.status !== "success") {
-      throw new Error(data.message || "Erro ao criar transação");
+    if (!data.data || !data.data.id) {
+      throw new Error("Resposta inválida da Aureo");
     }
 
-    const expiresAt = data.expires_at ? new Date(data.expires_at) : null;
+    const transaction = data.data;
+    const expiresAt = transaction.pix?.expirationDate ? new Date(transaction.pix.expirationDate) : null;
 
     const { error: dbError } = await supabase.from("transactions").insert({
-      transaction_id: data.transaction_id.toString(),
+      transaction_id: transaction.id.toString(),
       customer_name: body.customerName,
       customer_email: body.customerEmail,
       customer_phone: body.customerPhone,
@@ -122,8 +136,8 @@ Deno.serve(async (req: Request) => {
       pix_key: body.pixKey,
       pix_key_type: body.pixKeyType,
       amount: amountInReais,
-      status: "pending",
-      qrcode: data.qr_code,
+      status: transaction.status || "waiting_payment",
+      qrcode: transaction.pix?.qrcode || "",
       expiration_date: expiresAt ? expiresAt.toISOString().split("T")[0] : null,
       transaction_type: transactionType,
     });
@@ -135,11 +149,11 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         success: true,
-        transactionId: data.transaction_id,
-        qrcode: data.qr_code,
+        transactionId: transaction.id,
+        qrcode: transaction.pix?.qrcode || "",
         amount: amountInReais,
         expirationDate: expiresAt ? expiresAt.toISOString() : null,
-        status: "pending",
+        status: transaction.status || "waiting_payment",
       }),
       {
         headers: {
