@@ -236,7 +236,7 @@ export async function preloadInitialPix() {
   }
 
   try {
-    const pixData = await generatePixPayment('initial');
+    const pixData = await generatePixPayment('initial', 2167);
     setCachedPix('initial', pixData);
     console.log('PIX inicial pré-carregado com sucesso');
 
