@@ -58,6 +58,15 @@ function gerarTelefone() {
 
 export async function generatePixPayment(transactionType = 'initial', customAmount = null) {
   try {
+    // Validar variáveis de ambiente
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      console.error('Variáveis de ambiente não configuradas:', {
+        SUPABASE_URL: !!SUPABASE_URL,
+        SUPABASE_ANON_KEY: !!SUPABASE_ANON_KEY
+      });
+      throw new Error('Configuração do sistema incompleta. Por favor, tente novamente mais tarde.');
+    }
+
     const formData = getStoredFormData();
 
     if (!formData) {
@@ -96,6 +105,8 @@ export async function generatePixPayment(transactionType = 'initial', customAmou
     }
 
     const apiUrl = `${SUPABASE_URL}/functions/v1/create-pix`;
+    console.log('Chamando API:', apiUrl);
+
     const headers = {
       'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
       'Content-Type': 'application/json',
@@ -107,7 +118,20 @@ export async function generatePixPayment(transactionType = 'initial', customAmou
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
+    console.log('Status da resposta:', response.status, response.statusText);
+
+    // Tentar ler como texto primeiro para debug
+    const responseText = await response.text();
+    console.log('Resposta bruta (primeiros 200 chars):', responseText.substring(0, 200));
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Erro ao fazer parse da resposta:', parseError);
+      console.error('Resposta completa:', responseText);
+      throw new Error('Erro de comunicação com o servidor. Por favor, tente novamente.');
+    }
 
     if (!response.ok || !data.success) {
       throw new Error(data.error || 'Erro ao gerar PIX');

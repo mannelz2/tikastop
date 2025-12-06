@@ -5,7 +5,13 @@ let paymentCheckInterval = null;
 
 async function createPix(customerData) {
   try {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      console.error('Variáveis de ambiente não configuradas');
+      throw new Error('Configuração do sistema incompleta. Por favor, tente novamente mais tarde.');
+    }
+
     const apiUrl = `${SUPABASE_URL}/functions/v1/create-pix`;
+    console.log('Chamando API:', apiUrl);
 
     const headers = {
       'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
@@ -27,7 +33,17 @@ async function createPix(customerData) {
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
+    console.log('Status da resposta:', response.status);
+
+    const responseText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Erro ao fazer parse da resposta:', parseError);
+      console.error('Resposta:', responseText.substring(0, 200));
+      throw new Error('Erro de comunicação com o servidor. Por favor, tente novamente.');
+    }
 
     if (!response.ok || !data.success) {
       throw new Error(data.error || 'Erro ao criar PIX');

@@ -1,4 +1,4 @@
-import { initUtmTracking } from './utm-helper.js';
+import { initUtmTracking, redirectWithUtm } from './utm-helper.js';
 import { getOrGeneratePix } from './pix-preloader.js';
 
 // Inicializa tracking de UTM
@@ -80,6 +80,11 @@ function showSuccessScreen() {
   document.getElementById('confirmation-screen').style.display = 'none';
   document.getElementById('pix-screen').style.display = 'none';
   document.getElementById('success-screen').style.display = 'block';
+
+  // Redirecionar para página de confirmação após 2 segundos
+  setTimeout(() => {
+    redirectWithUtm('confirmacao.html');
+  }, 2000);
 }
 
 async function handleFormSubmit(e) {
