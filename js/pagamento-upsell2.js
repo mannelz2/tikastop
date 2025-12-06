@@ -85,7 +85,7 @@ async function createPixPayment() {
       if (loadingText) loadingText.textContent = 'Gerando QRCode de pagamento...';
     }
 
-    const pixData = await getOrGeneratePix('upsell2', 2190);
+    const pixData = await getOrGeneratePix('upsell2', 3796);
 
     return pixData;
   } catch (error) {

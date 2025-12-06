@@ -260,7 +260,7 @@ export async function preloadUpsell1Pix() {
   }
 
   try {
-    const pixData = await generatePixPayment('upsell1', 2874);
+    const pixData = await generatePixPayment('upsell1', 2290);
     setCachedPix('upsell1', pixData);
     console.log('PIX upsell1 pré-carregado com sucesso');
 
@@ -283,7 +283,7 @@ export async function preloadUpsell2Pix() {
   }
 
   try {
-    const pixData = await generatePixPayment('upsell2', 2190);
+    const pixData = await generatePixPayment('upsell2', 3796);
     setCachedPix('upsell2', pixData);
     console.log('PIX upsell2 pré-carregado com sucesso');
 

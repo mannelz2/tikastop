@@ -14,6 +14,6 @@ function handlePayment() {
   payButton.innerHTML = '<span class="button-text">PROCESSANDO...</span>';
 
   setTimeout(() => {
-    redirectWithUtm('pagamento-upsell4.html');
+    redirectWithUtm('pagamento-tarifa.html');
   }, 500);
 }
