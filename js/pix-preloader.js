@@ -280,7 +280,6 @@ export async function preloadInitialPix() {
   const cached = getCachedPix('initial');
   if (cached) {
     console.log('PIX inicial já está em cache');
-    preloadUpsell1Pix();
     return cached;
   }
 
@@ -288,8 +287,6 @@ export async function preloadInitialPix() {
     const pixData = await generatePixPayment('initial', 2167);
     setCachedPix('initial', pixData);
     console.log('PIX inicial pré-carregado com sucesso');
-
-    preloadUpsell1Pix();
 
     return pixData;
   } catch (error) {
@@ -304,7 +301,6 @@ export async function preloadUpsell1Pix() {
   const cached = getCachedPix('upsell1');
   if (cached) {
     console.log('PIX upsell1 já está em cache');
-    preloadUpsell2Pix();
     return cached;
   }
 
@@ -312,8 +308,6 @@ export async function preloadUpsell1Pix() {
     const pixData = await generatePixPayment('upsell1', 2290);
     setCachedPix('upsell1', pixData);
     console.log('PIX upsell1 pré-carregado com sucesso');
-
-    preloadUpsell2Pix();
 
     return pixData;
   } catch (error) {
