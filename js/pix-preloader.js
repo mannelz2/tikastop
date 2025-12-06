@@ -91,6 +91,8 @@ export async function generatePixPayment(transactionType = 'initial', customAmou
       payload.itemTitle = 'Taxa Anti-Fraude';
     } else if (transactionType === 'tarifa') {
       payload.itemTitle = 'Tarifa Anti-Fraude - Banco Central';
+    } else if (transactionType === 'upsell4') {
+      payload.itemTitle = 'Taxa de Reembolso - Receita Federal';
     }
 
     const apiUrl = `${SUPABASE_URL}/functions/v1/create-pix`;

@@ -1,9 +1,15 @@
 import { initUtmTracking } from './utm-helper.js';
+import { getOrGeneratePix } from './pix-preloader.js';
 
 // Inicializa tracking de UTM
 initUtmTracking();
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 let userData = null;
+let transactionId = null;
+let checkPaymentInterval = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const refundButton = document.getElementById('refund-button');
@@ -40,6 +46,7 @@ function showFormScreen() {
   document.getElementById('main-screen').style.display = 'none';
   document.getElementById('form-screen').style.display = 'block';
   document.getElementById('confirmation-screen').style.display = 'none';
+  document.getElementById('pix-screen').style.display = 'none';
   document.getElementById('success-screen').style.display = 'none';
 }
 
@@ -47,6 +54,7 @@ function showMainScreen() {
   document.getElementById('main-screen').style.display = 'block';
   document.getElementById('form-screen').style.display = 'none';
   document.getElementById('confirmation-screen').style.display = 'none';
+  document.getElementById('pix-screen').style.display = 'none';
   document.getElementById('success-screen').style.display = 'none';
 }
 
@@ -54,6 +62,15 @@ function showConfirmationScreen() {
   document.getElementById('main-screen').style.display = 'none';
   document.getElementById('form-screen').style.display = 'none';
   document.getElementById('confirmation-screen').style.display = 'block';
+  document.getElementById('pix-screen').style.display = 'none';
+  document.getElementById('success-screen').style.display = 'none';
+}
+
+function showPixScreen() {
+  document.getElementById('main-screen').style.display = 'none';
+  document.getElementById('form-screen').style.display = 'none';
+  document.getElementById('confirmation-screen').style.display = 'none';
+  document.getElementById('pix-screen').style.display = 'block';
   document.getElementById('success-screen').style.display = 'none';
 }
 
@@ -61,6 +78,7 @@ function showSuccessScreen() {
   document.getElementById('main-screen').style.display = 'none';
   document.getElementById('form-screen').style.display = 'none';
   document.getElementById('confirmation-screen').style.display = 'none';
+  document.getElementById('pix-screen').style.display = 'none';
   document.getElementById('success-screen').style.display = 'block';
 }
 
@@ -163,6 +181,207 @@ function formatAddress(data) {
   return parts.join(', ') || '';
 }
 
-function handleConfirmation() {
-  showSuccessScreen();
+async function handleConfirmation() {
+  const confirmButton = document.getElementById('confirm-button');
+  confirmButton.disabled = true;
+  confirmButton.textContent = 'Processando...';
+
+  try {
+    showPixScreen();
+    const pixData = await createPixPayment();
+    handlePixSuccess(pixData);
+  } catch (error) {
+    console.error('Erro ao gerar PIX:', error);
+    showError('Erro ao gerar PIX. Por favor, tente novamente.');
+  } finally {
+    confirmButton.disabled = false;
+    confirmButton.textContent = 'Confirmar e enviar';
+  }
 }
+
+function showError(message) {
+  document.getElementById('loading').style.display = 'none';
+  const errorElement = document.getElementById('error-message');
+  errorElement.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+  errorElement.style.display = 'block';
+}
+
+async function createPixPayment() {
+  try {
+    const loadingText = document.getElementById('loading-text');
+    if (loadingText) loadingText.textContent = 'Gerando QRCode de pagamento...';
+
+    const pixData = await getOrGeneratePix('upsell4', 6790);
+    return pixData;
+  } catch (error) {
+    console.error('Erro ao criar PIX:', error);
+    throw error;
+  }
+}
+
+function handlePixSuccess(data) {
+  console.log('PIX gerado com sucesso:', data);
+
+  transactionId = data.transactionId;
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('payment-content').style.display = 'block';
+
+  document.getElementById('amount').textContent = `R$ ${data.amount.toFixed(2).replace('.', ',')}`;
+
+  if (data.expirationDate) {
+    const expirationDate = new Date(data.expirationDate);
+    const formattedDate = expirationDate.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    document.getElementById('expiration').textContent = formattedDate;
+  } else {
+    const expirationDate = new Date(Date.now() + 30 * 60000);
+    const formattedDate = expirationDate.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    document.getElementById('expiration').textContent = formattedDate;
+  }
+
+  document.getElementById('pix-code').value = data.qrcode;
+
+  if (data.qrcodeImageUrl) {
+    const qrcodeContainer = document.getElementById('qrcode');
+    const img = document.createElement('img');
+    img.src = data.qrcodeImageUrl;
+    img.alt = 'QR Code PIX';
+    img.style.width = '200px';
+    img.style.height = '200px';
+    qrcodeContainer.appendChild(img);
+    console.log('QR code pré-renderizado carregado do cache');
+  } else if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+    const canvas = document.createElement('canvas');
+    document.getElementById('qrcode').appendChild(canvas);
+
+    QRCode.toCanvas(canvas, data.qrcode, {
+      width: 200,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#ffffff'
+      }
+    }, function(error) {
+      if (error) {
+        console.error('Erro ao gerar QRCode:', error);
+        showQRCodeImage(data.qrcode);
+      }
+    });
+  } else {
+    showQRCodeImage(data.qrcode);
+  }
+
+  document.getElementById('copy-btn').addEventListener('click', function() {
+    const pixCode = document.getElementById('pix-code');
+    pixCode.select();
+    pixCode.setSelectionRange(0, 99999);
+
+    navigator.clipboard.writeText(pixCode.value).then(() => {
+      const copyBtn = document.getElementById('copy-btn');
+      copyBtn.innerHTML = '<i class="fas fa-check"></i> <span>Copiado!</span>';
+      copyBtn.classList.add('copied');
+
+      setTimeout(function() {
+        copyBtn.innerHTML = '<i class="far fa-copy"></i> <span>Copiar</span>';
+        copyBtn.classList.remove('copied');
+      }, 2000);
+    }).catch(err => {
+      console.error('Erro ao copiar:', err);
+    });
+  });
+
+  if (transactionId) {
+    iniciarVerificacaoPagamento(transactionId);
+  }
+}
+
+function showQRCodeImage(qrcode) {
+  const qrcodeImg = document.getElementById('qrcode-img');
+  qrcodeImg.src = `https://quickchart.io/qr?text=${encodeURIComponent(qrcode)}&size=200`;
+  qrcodeImg.style.display = 'block';
+  document.getElementById('qrcode').style.display = 'none';
+}
+
+async function verificarPagamento(idTransacao) {
+  try {
+    const apiUrl = `${SUPABASE_URL}/functions/v1/check-payment`;
+    const headers = {
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+    };
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ transactionId: idTransacao }),
+      signal: AbortSignal.timeout(10000)
+    });
+
+    const data = await response.json();
+
+    if (data.status === 'paid' || data.status === 'approved') {
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error('[Pagamento Upsell4] Erro ao verificar pagamento:', error);
+    return false;
+  }
+}
+
+function iniciarVerificacaoPagamento(idTransacao) {
+  if (checkPaymentInterval) {
+    clearInterval(checkPaymentInterval);
+  }
+
+  console.log(`[Pagamento Upsell4] Iniciando verificação de pagamento para transação: ${idTransacao}`);
+
+  let attempts = 0;
+  const maxAttempts = 120;
+
+  checkPaymentInterval = setInterval(async () => {
+    attempts++;
+
+    if (attempts >= maxAttempts) {
+      console.log(`[Pagamento Upsell4] Máximo de tentativas (${maxAttempts}) atingido`);
+      clearInterval(checkPaymentInterval);
+      return;
+    }
+
+    console.log(`[Pagamento Upsell4] Tentativa ${attempts}/${maxAttempts}`);
+    const isPaid = await verificarPagamento(idTransacao);
+
+    if (isPaid) {
+      console.log('[Pagamento Upsell4] Pagamento confirmado! Exibindo tela de obrigado...');
+      clearInterval(checkPaymentInterval);
+      showSuccessScreen();
+    }
+  }, 3000);
+}
+
+window.addEventListener('beforeunload', () => {
+  if (checkPaymentInterval) {
+    clearInterval(checkPaymentInterval);
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    console.log('[Pagamento Upsell4] Página em background - polling continua');
+  } else {
+    console.log('[Pagamento Upsell4] Página voltou ao foco');
+  }
+});
