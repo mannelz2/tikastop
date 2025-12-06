@@ -1,0 +1,1 @@
+import{i as n,r as e}from"./utm-helper-C4jEGc4L.js";n();document.addEventListener("DOMContentLoaded",()=>{document.getElementById("pay-button").addEventListener("click",a)});function a(){const t=document.getElementById("pay-button");t.disabled=!0,t.innerHTML='<span class="button-text">PROCESSANDO...</span>',setTimeout(()=>{e("pagamento-tarifa.html")},500)}
