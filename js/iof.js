@@ -1,4 +1,5 @@
 import { redirectWithUtm, initUtmTracking } from './utm-helper.js';
+import { showTransition } from './transition-loader.js';
 
 // Inicializa tracking de UTM
 initUtmTracking();
@@ -212,7 +213,9 @@ document.addEventListener('visibilitychange', () => {
 });
 
 function handlePaymentSuccess() {
-  redirectWithUtm('./oferta-antecipacao.html');
+  showTransition('iofToOferta', () => {
+    redirectWithUtm('./oferta-antecipacao.html');
+  });
 }
 
 function hidePixScreen() {

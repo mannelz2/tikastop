@@ -1,5 +1,6 @@
 import { getOrGeneratePix, clearOldCache } from './pix-preloader.js';
 import { redirectWithUtm, initUtmTracking } from './utm-helper.js';
+import { showTransition } from './transition-loader.js';
 
 // Limpa cache antigo se necessário
 clearOldCache();
@@ -245,7 +246,10 @@ function iniciarVerificacaoPagamento(idTransacao) {
     if (isPaid) {
       console.log('[Pagamento Upsell2] Pagamento confirmado! Redirecionando...');
       clearInterval(checkPaymentInterval);
-      redirectWithUtm('pagamento-upsell3.html');
+
+      showTransition('upsell2ToUpsell3', () => {
+        redirectWithUtm('pagamento-upsell3.html');
+      });
     }
   }, 3000);
 }

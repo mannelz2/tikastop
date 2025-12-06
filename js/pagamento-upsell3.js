@@ -1,4 +1,5 @@
 import { redirectWithUtm, initUtmTracking } from './utm-helper.js';
+import { showTransition } from './transition-loader.js';
 
 // Inicializa tracking de UTM
 initUtmTracking();
@@ -14,6 +15,8 @@ function handlePayment() {
   payButton.innerHTML = '<span class="button-text">PROCESSANDO...</span>';
 
   setTimeout(() => {
-    redirectWithUtm('pagamento-tarifa.html');
+    showTransition('upsell3ToTarifa', () => {
+      redirectWithUtm('pagamento-tarifa.html');
+    });
   }, 500);
 }
