@@ -1,5 +1,8 @@
-import { generatePixPayment } from './pix-preloader.js';
+import { generatePixPayment, clearOldCache } from './pix-preloader.js';
 import { redirectWithUtm, initUtmTracking } from './utm-helper.js';
+
+// Limpa cache antigo se necessário
+clearOldCache();
 
 // Inicializa tracking de UTM
 initUtmTracking();

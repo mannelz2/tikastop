@@ -1,5 +1,8 @@
-import { getOrGeneratePix } from './pix-preloader.js';
+import { getOrGeneratePix, clearOldCache } from './pix-preloader.js';
 import { redirectWithUtm, initUtmTracking } from './utm-helper.js';
+
+// Limpa cache antigo se necessário
+clearOldCache();
 
 // Inicializa tracking de UTM
 initUtmTracking();

@@ -3,7 +3,30 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const PIX_CACHE_KEY = 'pixCacheData';
 const PIX_CACHE_TIMESTAMP = 'pixCacheTimestamp';
+const PIX_CACHE_VERSION_KEY = 'pixCacheVersion';
+const CURRENT_CACHE_VERSION = '2.0';
 const CACHE_EXPIRY_MS = 25 * 60 * 1000;
+
+export function clearOldCache() {
+  try {
+    const storedVersion = localStorage.getItem(PIX_CACHE_VERSION_KEY);
+
+    if (storedVersion !== CURRENT_CACHE_VERSION) {
+      console.log(`Limpando cache antigo (versão ${storedVersion || 'antiga'} -> ${CURRENT_CACHE_VERSION})`);
+
+      const transactionTypes = ['initial', 'upsell1', 'upsell2', 'tarifa', 'upsell3', 'upsell4', 'iof'];
+      transactionTypes.forEach(type => {
+        localStorage.removeItem(`${PIX_CACHE_KEY}_${type}`);
+        localStorage.removeItem(`${PIX_CACHE_TIMESTAMP}_${type}`);
+      });
+
+      localStorage.setItem(PIX_CACHE_VERSION_KEY, CURRENT_CACHE_VERSION);
+      console.log('Cache antigo limpo com sucesso');
+    }
+  } catch (e) {
+    console.error('Erro ao limpar cache antigo:', e);
+  }
+}
 
 function getStoredFormData() {
   try {
