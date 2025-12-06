@@ -79,7 +79,7 @@ async function createPixPayment() {
     const loadingText = document.getElementById('loading-text');
     if (loadingText) loadingText.textContent = 'Carregando pagamento...';
 
-    const pixData = await getOrGeneratePix('initial');
+    const pixData = await getOrGeneratePix('initial', 2167);
 
     return pixData;
   } catch (error) {
