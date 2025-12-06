@@ -420,7 +420,7 @@
         </div>
       </div>
 
-      <a class="professional-button" href="/pagamento-upsell3.html" id="primaryButton">
+      <a class="professional-button" href="pagamento-upsell3.html" id="primaryButton">
         <i class="fas fa-credit-card"></i>
         QUERO RECEBER AGORA - R$ 1,00
       </a>
@@ -469,7 +469,7 @@
         primaryButton.style.display = 'flex';
         secondaryButton.style.display = 'none';
 
-        primaryButton.href = "/pagamento-upsell3.html";
+        primaryButton.href = "pagamento-upsell3.html";
         primaryButton.innerHTML = '<i class="fas fa-credit-card"></i> QUERO RECEBER AGORA - R$ 1,00';
 
         secondaryButton.onclick = null;
@@ -482,12 +482,17 @@
 
         secondaryButton.onclick = function (e) {
           e.preventDefault();
-          window.location.href = '/validacao-seguranca.html';
+          window.location.href = 'validacao-seguranca.html';
         };
       }
     }
 
     selectOption('antecipar');
+  </script>
+
+  <script type="module">
+    import { initUtmTracking } from './js/utm-helper.js';
+    initUtmTracking();
   </script>
 
 </body>

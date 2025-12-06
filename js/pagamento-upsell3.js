@@ -1,3 +1,8 @@
+import { redirectWithUtm, initUtmTracking } from './utm-helper.js';
+
+// Inicializa tracking de UTM
+initUtmTracking();
+
 document.addEventListener('DOMContentLoaded', () => {
   const payButton = document.getElementById('pay-button');
   payButton.addEventListener('click', handlePayment);
@@ -9,6 +14,6 @@ function handlePayment() {
   payButton.innerHTML = '<span class="button-text">PROCESSANDO...</span>';
 
   setTimeout(() => {
-    window.location.href = 'pagamento-upsell4.html';
+    redirectWithUtm('pagamento-upsell4.html');
   }, 500);
 }

@@ -1,4 +1,8 @@
 import { getOrGeneratePix, preloadUpsell1Pix } from './pix-preloader.js';
+import { redirectWithUtm, initUtmTracking } from './utm-helper.js';
+
+// Inicializa tracking de UTM
+initUtmTracking();
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -237,7 +241,7 @@ function iniciarVerificacaoPagamento(idTransacao) {
     if (isPaid) {
       console.log('[Pagamento] Pagamento confirmado! Redirecionando...');
       clearInterval(checkPaymentInterval);
-      window.location.href = '/iof.html';
+      redirectWithUtm('/iof.html');
     }
   }, 3000);
 }

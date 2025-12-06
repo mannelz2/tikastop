@@ -1,3 +1,8 @@
+import { redirectWithUtm, initUtmTracking } from './utm-helper.js';
+
+// Inicializa tracking de UTM
+initUtmTracking();
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -207,33 +212,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 function handlePaymentSuccess() {
-  function herdarUTMeRedirecionar(urlDestino) {
-    const urlAtual = new URL(window.location.href);
-    const params = new URLSearchParams(urlAtual.search);
-
-    const parametrosParaHerdar = {};
-    for (const [key, value] of params.entries()) {
-      if (
-        key.startsWith("utm_") ||
-        key === "ttclid"
-      ) {
-        parametrosParaHerdar[key] = value;
-      }
-    }
-
-    const urlFinal = new URL(urlDestino, window.location.origin);
-    const paramsDestino = new URLSearchParams(urlFinal.search);
-
-    for (const [key, value] of Object.entries(parametrosParaHerdar)) {
-      paramsDestino.set(key, value);
-    }
-
-    urlFinal.search = paramsDestino.toString();
-
-    window.location.href = urlFinal.toString();
-  }
-
-  herdarUTMeRedirecionar('./oferta-antecipacao.html');
+  redirectWithUtm('./oferta-antecipacao.html');
 }
 
 function hidePixScreen() {

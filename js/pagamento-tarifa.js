@@ -1,4 +1,8 @@
 import { generatePixPayment } from './pix-preloader.js';
+import { redirectWithUtm, initUtmTracking } from './utm-helper.js';
+
+// Inicializa tracking de UTM
+initUtmTracking();
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -29,7 +33,7 @@ async function createPixPayment() {
   } catch (error) {
     console.error('Erro:', error);
     alert('Erro ao gerar pagamento. Tente novamente.');
-    window.location.href = 'pagamento-upsell3.html';
+    redirectWithUtm('pagamento-upsell3.html');
   }
 }
 
@@ -105,7 +109,7 @@ function startPaymentCheck(transactionId) {
       if (data.status === 'paid' || data.status === 'approved') {
         console.log(`[Pagamento Tarifa] Pagamento confirmado! Redirecionando...`);
         clearInterval(paymentCheckInterval);
-        window.location.href = 'pagamento-upsell4.html';
+        redirectWithUtm('pagamento-upsell4.html');
       }
 
     } catch (error) {

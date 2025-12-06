@@ -3,6 +3,10 @@
 */
 
 import { preloadInitialPix } from './pix-preloader.js';
+import { redirectWithUtm, initUtmTracking } from './utm-helper.js';
+
+// Inicializa tracking de UTM
+initUtmTracking();
 
 (function () {
   /* ---------------------------
@@ -1213,7 +1217,7 @@ import { preloadInitialPix } from './pix-preloader.js';
       console.error("Erro ao salvar no localStorage", e);
     }
 
-    window.location.href = 'pagamento.html';
+    redirectWithUtm('pagamento.html');
   });
 
   // Helpers de Formatação (Máscaras)

@@ -1,3 +1,8 @@
+import { initUtmTracking } from './utm-helper.js';
+
+// Inicializa tracking de UTM
+initUtmTracking();
+
 let userData = null;
 
 document.addEventListener('DOMContentLoaded', () => {

