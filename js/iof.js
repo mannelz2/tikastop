@@ -6,7 +6,7 @@ initUtmTracking();
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const IOF_AMOUNT = 1.00;
+const IOF_AMOUNT = 22.90;
 
 let pixData = null;
 let paymentCheckInterval = null;
